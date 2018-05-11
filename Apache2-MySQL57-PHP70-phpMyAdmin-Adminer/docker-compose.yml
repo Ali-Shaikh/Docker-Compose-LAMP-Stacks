@@ -1,0 +1,56 @@
+version: "3"
+services:
+    webserver:
+        build: 
+            context: ./services/webserver
+        container_name: 'lamp-www'
+        ports:
+            - "80:80"
+            - "443:443"
+        volumes:
+            - ${DOCUMENT_ROOT-./www}:/var/www/html
+            - ${PHP_INI-./config/php/php.ini}:/usr/local/etc/php/php.ini
+            - ${VHOSTS_DIR-./config/vhosts}:/etc/apache2/sites-enabled
+            - ${LOG_DIR-./logs/apache2}:/var/log/apache2
+        links:
+            - mysql
+    mysql:
+        build: ./services/mysql
+        container_name: 'lamp-mysql'
+        restart: always
+        ports:
+            - "3306:3306"
+        environment:
+            TZ: "Asia/Karachi"
+            MYSQL_ROOT_PASSWORD: 'root'
+            MYSQL_USER: 'root'
+            MYSQL_PASSWORD: 'root'
+            MYSQL_DATABASE: 'test-db'
+        volumes:
+            - ${MYSQL_DATA_DIR-./volumes/mysql}:/var/lib/mysql
+            - ${MYSQL_CNF-./config/mysql}:/etc/mysql/conf.d/
+            - ${MYSQL_LOG_DIR-./logs/mysql}:/var/log/mysql
+            - persistent:/var/lib/mysql
+            #- ./volumes/mysql:/docker-entrypoint-initdb.d
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        container_name: 'lamp-phpmyadmin'
+        ports:
+            - 8000:80
+        environment:
+            - PMA_ARBITRARY=1
+        restart: always
+        links:
+            - mysql
+        volumes: 
+            - /sessions
+        depends_on:
+            - mysql
+    adminer:
+        image: adminer
+        container_name: 'lamp-adminer'
+        restart: always
+        ports:
+            - 8080:8080
+volumes:
+    persistent:
