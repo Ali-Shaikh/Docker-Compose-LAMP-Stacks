@@ -21,17 +21,14 @@ services:
         ports:
             - "3306:3306"
         environment:
-            TZ: "Asia/Karachi"
             MYSQL_ROOT_PASSWORD: 'root'
-            MYSQL_USER: 'root'
-            MYSQL_PASSWORD: 'root'
-            MYSQL_DATABASE: 'test-db'
+            MYSQL_DATABASE: 'my_db'
         volumes:
             - ${MYSQL_DATA_DIR-./volumes/mysql}:/var/lib/mysql
             - ${MYSQL_CNF-./config/mysql}:/etc/mysql/conf.d/
             - ${MYSQL_LOG_DIR-./logs/mysql}:/var/log/mysql
+            - ./volumes/mysql-dump:/docker-entrypoint-initdb.d
             - persistent:/var/lib/mysql
-            #- ./volumes/mysql:/docker-entrypoint-initdb.d
     phpmyadmin:
         image: phpmyadmin/phpmyadmin
         container_name: 'lamp-phpmyadmin'
